@@ -4,34 +4,39 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-//const mongoSanitize = require('express-mongo-sanitize');
+
 const app = express();
 
-app.use(express.json());
-app.use(cors());
-app.use(helmet());
-//app.use(mongoSanitize());
+// 🔥 MIDDLEWARES (orden correcto)
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
+  credentials: false
 }));
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(helmet());
+
+// 🔥 DB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Conectado a DB'))
   .catch(err => console.log(err));
 
-
-  const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100 // Limita cada IP a 100 peticiones por ventana
+// 🔥 RATE LIMIT
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100
 });
+
 app.use('/api/', limiter);
-// Importar Rutas
+
+// 🔥 ROUTES
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/animes', require('./routes/anime'));
 app.use('/api/categories', require('./routes/category'));
 
+// 🔥 PORT
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

@@ -3,25 +3,80 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+/* =========================
+   REGISTER
+========================= */
 router.post('/register', async (req, res) => {
-  const { username, email, password, role } = req.body;
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-  
-  const user = new User({ username, email, password: hashedPassword, role });
-  await user.save();
-  res.json({ msg: "Usuario registrado" });
+  try {
+    const { username, email, password, role } = req.body;
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = new User({
+      username,
+      email,
+      password: hashedPassword,
+      role: role || "user" // 👈 por defecto user
+    });
+
+    await user.save();
+
+    res.json({ msg: "Usuario registrado correctamente" });
+
+  } catch (err) {
+    res.status(500).json({ msg: "Error en registro", error: err.message });
+  }
 });
 
+
+/* =========================
+   LOGIN
+========================= */
 router.post('/login', async (req, res) => {
-  const user = await User.findOne({ email: req.body.email });
-  if (!user) return res.status(400).send('Email no encontrado');
+  try {
+    const { email, password } = req.body;
 
-  const validPass = await bcrypt.compare(req.body.password, user.password);
-  if (!validPass) return res.status(400).send('Contraseña incorrecta');
+    console.log("LOGIN BODY:", req.body); // 🔥 DEBUG IMPORTANTE
 
-  const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET);
-  res.header('Authorization', token).json({ token, role: user.role });
+    if (!email || !password) {
+      return res.status(400).json({ msg: "Faltan datos" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ msg: "Email no encontrado" });
+    }
+
+    const validPass = await bcrypt.compare(password, user.password);
+
+    if (!validPass) {
+      return res.status(400).json({ msg: "Contraseña incorrecta" });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    return res.json({
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role
+      }
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      msg: "Error en login",
+      error: err.message
+    });
+  }
 });
 
 module.exports = router;
