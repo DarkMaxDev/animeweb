@@ -3,9 +3,7 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-/* =========================
-   REGISTER
-========================= */
+
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password, role } = req.body;
@@ -17,7 +15,7 @@ router.post('/register', async (req, res) => {
       username,
       email,
       password: hashedPassword,
-      role: role || "user" // 👈 por defecto user
+      role: role || "user" 
     });
 
     await user.save();
@@ -30,14 +28,11 @@ router.post('/register', async (req, res) => {
 });
 
 
-/* =========================
-   LOGIN
-========================= */
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log("LOGIN BODY:", req.body); // 🔥 DEBUG IMPORTANTE
+    console.log("LOGIN BODY:", req.body); 
 
     if (!email || !password) {
       return res.status(400).json({ msg: "Faltan datos" });

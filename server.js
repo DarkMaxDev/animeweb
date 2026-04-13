@@ -7,7 +7,6 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 
-// 🔥 MIDDLEWARES (orden correcto)
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"],
@@ -18,12 +17,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 
-// 🔥 DB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Conectado a DB'))
   .catch(err => console.log(err));
 
-// 🔥 RATE LIMIT
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100
@@ -31,12 +28,10 @@ const limiter = rateLimit({
 
 app.use('/api/', limiter);
 
-// 🔥 ROUTES
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/animes', require('./routes/anime'));
 app.use('/api/categories', require('./routes/category'));
 
-// 🔥 PORT
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
