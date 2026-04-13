@@ -27,7 +27,7 @@ const limiter = rateLimit({
 });
 
 app.use('/api/', limiter);
-
+app.use('/api/animes', require('./routes/anime'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/animes', require('./routes/anime'));
 app.use('/api/categories', require('./routes/category'));

@@ -119,7 +119,6 @@ router.put('/:id', auth('admin'), async (req, res) => {
   }
 });
 
-// ❌ ELIMINAR COMENTARIO
 router.delete('/:id/comentario/:commentId', auth(), async (req, res) => {
   try {
     const anime = await Anime.findById(req.params.id);
@@ -140,6 +139,24 @@ router.delete('/:id/comentario/:commentId', auth(), async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al eliminar comentario" });
+  }
+});
+
+router.delete('/:id', auth('admin'), async (req, res) => {
+  try {
+    const anime = await Anime.findById(req.params.id);
+
+    if (!anime) {
+      return res.status(404).json({ msg: "Anime no encontrado" });
+    }
+
+    await Anime.findByIdAndDelete(req.params.id);
+
+    res.json({ msg: "Anime eliminado correctamente" });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al eliminar anime" });
   }
 });
 
